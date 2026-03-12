@@ -13,6 +13,7 @@
         :root {
             --primary-color: #6c5ce7;
             --bg-color: #f9f9f9;
+            --danger-color: #ff7675;
         }
         body {
             font-family: 'Pretendard', -apple-system, sans-serif;
@@ -58,16 +59,35 @@
             cursor: pointer;
             transition: transform 0.2s;
             width: 80%;
+            margin-bottom: 10px;
         }
         button:active { transform: scale(0.95); }
+
+        /* 초기화 버튼 스타일 */
+        .clear-btn {
+            background-color: transparent;
+            color: #888;
+            font-size: 0.8rem;
+            text-decoration: underline;
+            padding: 5px;
+            width: auto;
+            border: none;
+        }
         
         .history {
             margin-top: 40px;
             width: 100%;
             max-width: 400px;
         }
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--primary-color);
+            margin-bottom: 15px;
+        }
         .history h3 { 
-            border-bottom: 2px solid var(--primary-color); 
+            margin: 0;
             padding-bottom: 5px; 
             color: #333;
         }
@@ -101,11 +121,14 @@
         <div class="display-area" id="resultDisplay">
             버튼을 눌러 Hilltown을 만나보세요!
         </div>
-        <button onclick="drawLyric()">가사 뽑기</button>
+        <button onclick="drawLyric()">알아서 할게요</button>
     </div>
 
     <div class="history">
-        <h3>어제 만난 Hilltown 보관함</h3>
+        <div class="history-header">
+            <h3>어제 만난 Hilltown 보관함</h3>
+            <button class="clear-btn" onclick="clearHistory()">보관함 비우기</button>
+        </div>
         <ul class="history-list" id="historyList">
         </ul>
     </div>
@@ -216,46 +239,37 @@
 
         const resultDisplay = document.getElementById('resultDisplay');
         const historyList = document.getElementById('historyList');
-        let isRolling = false; // 굴러가는 중인지 체크
+        let isRolling = false;
 
         window.onload = displayHistory;
 
         function drawLyric() {
-            if (isRolling) return; // 이미 굴러가고 있으면 버튼 클릭 무시
+            if (isRolling) return;
             isRolling = true;
             
             const btn = document.querySelector('button');
             btn.innerText = "도르르륵...";
-            btn.style.backgroundColor = "#a4b0be"; // 버튼 색상을 회색으로 변경
+            btn.style.backgroundColor = "#a4b0be";
             
             let rollCount = 0;
-            
-            // 0.05초(50ms)마다 가사를 무작위로 바꿈 (슬롯머신 효과)
             const rollInterval = setInterval(() => {
                 const tempIndex = Math.floor(Math.random() * lyrics.length);
                 resultDisplay.innerText = lyrics[tempIndex];
                 rollCount++;
 
-                // 30번 굴러가면 (약 1.5초 후) 멈춤!
                 if (rollCount > 30) {
-                    clearInterval(rollInterval); // 굴러가는 타이머 종료
-                    
-                    // 진짜 최종 결과 뽑기
+                    clearInterval(rollInterval);
                     const finalIndex = Math.floor(Math.random() * lyrics.length);
                     const finalLyric = lyrics[finalIndex];
-                    
                     resultDisplay.innerText = "✨ " + finalLyric + " ✨";
 
-                    // 저장 데이터 생성
                     const savedItem = {
                         text: finalLyric,
                         date: new Date().toLocaleString()
                     };
-
                     saveToLocal(savedItem);
                     displayHistory();
 
-                    // 버튼 원상복구
                     isRolling = false;
                     btn.innerText = "가사 뽑기";
                     btn.style.backgroundColor = "var(--primary-color)";
@@ -269,10 +283,17 @@
             localStorage.setItem('lyricHistory', JSON.stringify(history));
         }
 
+        // 🧹 보관함 삭제 기능 추가
+        function clearHistory() {
+            if (confirm("정말로 보관함을 비우시겠어요?")) {
+                localStorage.removeItem('lyricHistory');
+                displayHistory();
+            }
+        }
+
         function displayHistory() {
             let history = JSON.parse(localStorage.getItem('lyricHistory')) || [];
             historyList.innerHTML = '';
-
             history.forEach(item => {
                 const li = document.createElement('li');
                 li.className = 'history-item';
