@@ -1,12 +1,12 @@
-<!DOCTYPE html>
+    <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>오늘의 가사 가챠</title>
     
-    <meta property="og:title" content="길을 걷다 만난 노래">
-    <meta property="og:description" content="길을 걷다 만난 노래가 네 운세를 말할 거야">
+    <meta property="og:title" content="길을 걷다 만난 Hilltown">
+    <meta property="og:description" content="길을 걷다 만난 Hilltown이 네 운세를 말해줄 거야">
     <meta property="og:image" content="https://images.unsplash.com/photo-1493225457284-0bf53ce18dc6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80">
     
     <style>
@@ -99,13 +99,13 @@
     <div class="container">
         <h2>오늘의 Hilltown</h2>
         <div class="display-area" id="resultDisplay">
-            버튼을 눌러 가챠를 시작하세요!
+            버튼을 눌러 Hilltown을 만나보세요!
         </div>
         <button onclick="drawLyric()">가사 뽑기</button>
     </div>
 
     <div class="history">
-        <h3>📚 저장된 Hilltown 보관함</h3>
+        <h3>어제 만난 Hilltown 보관함</h3>
         <ul class="history-list" id="historyList">
         </ul>
     </div>
@@ -126,22 +126,51 @@
 
         const resultDisplay = document.getElementById('resultDisplay');
         const historyList = document.getElementById('historyList');
+        let isRolling = false; // 굴러가는 중인지 체크
 
         window.onload = displayHistory;
 
         function drawLyric() {
-            const randomIndex = Math.floor(Math.random() * lyrics.length);
-            const selectedLyric = lyrics[randomIndex];
+            if (isRolling) return; // 이미 굴러가고 있으면 버튼 클릭 무시
+            isRolling = true;
             
-            resultDisplay.innerText = selectedLyric;
+            const btn = document.querySelector('button');
+            btn.innerText = "도르르륵...";
+            btn.style.backgroundColor = "#a4b0be"; // 버튼 색상을 회색으로 변경
+            
+            let rollCount = 0;
+            
+            // 0.05초(50ms)마다 가사를 무작위로 바꿈 (슬롯머신 효과)
+            const rollInterval = setInterval(() => {
+                const tempIndex = Math.floor(Math.random() * lyrics.length);
+                resultDisplay.innerText = lyrics[tempIndex];
+                rollCount++;
 
-            const savedItem = {
-                text: selectedLyric,
-                date: new Date().toLocaleString()
-            };
+                // 30번 굴러가면 (약 1.5초 후) 멈춤!
+                if (rollCount > 30) {
+                    clearInterval(rollInterval); // 굴러가는 타이머 종료
+                    
+                    // 진짜 최종 결과 뽑기
+                    const finalIndex = Math.floor(Math.random() * lyrics.length);
+                    const finalLyric = lyrics[finalIndex];
+                    
+                    resultDisplay.innerText = "✨ " + finalLyric + " ✨";
 
-            saveToLocal(savedItem);
-            displayHistory();
+                    // 저장 데이터 생성
+                    const savedItem = {
+                        text: finalLyric,
+                        date: new Date().toLocaleString()
+                    };
+
+                    saveToLocal(savedItem);
+                    displayHistory();
+
+                    // 버튼 원상복구
+                    isRolling = false;
+                    btn.innerText = "가사 뽑기";
+                    btn.style.backgroundColor = "var(--primary-color)";
+                }
+            }, 50);
         }
 
         function saveToLocal(item) {
@@ -164,3 +193,4 @@
     </script>
 </body>
 </html>
+   
